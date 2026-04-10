@@ -12,11 +12,15 @@ Map<String, String> _loadEnv() {
   final file = File('.env');
   if (!file.existsSync()) throw Exception('.env file not found');
   return Map.fromEntries(
-    file.readAsLinesSync()
+    file
+        .readAsLinesSync()
         .where((l) => l.contains('=') && !l.trimLeft().startsWith('#'))
         .map((l) {
           final idx = l.indexOf('=');
-          return MapEntry(l.substring(0, idx).trim(), l.substring(idx + 1).trim());
+          return MapEntry(
+            l.substring(0, idx).trim(),
+            l.substring(idx + 1).trim(),
+          );
         }),
   );
 }
@@ -54,8 +58,10 @@ Future<void> main() async {
     try {
       final msg = jsonDecode(raw as String) as Map<String, dynamic>;
       wsReceived.add(msg);
-      log('[WS RECV] counter=${msg['counter']}, '
-          'echo_message=${msg['echo_message']}, ts=${msg['ts']}');
+      log(
+        '[WS RECV] counter=${msg['counter']}, '
+        'echo_message=${msg['echo_message']}, ts=${msg['ts']}',
+      );
     } catch (_) {
       log('[WS RECV] unparseable: $raw');
     }
@@ -66,7 +72,7 @@ Future<void> main() async {
     final text = 'ping $i';
     channel.sink.add(text);
     log('[WS] Sending: $text');
-    await Future<void>.delayed(const Duration(milliseconds: 200));
+    await Future<void>.delayed(const Duration(milliseconds: 1));
   }
 
   // Wait for any late responses
@@ -95,7 +101,9 @@ Future<void> main() async {
   log('');
   log('=== RESULTS (monotonically ordered by counter) ===');
   for (final msg in ordered) {
-    log('[RESULT] counter=${msg['counter']} | ${msg['echo_message']} | ts=${msg['ts']}');
+    log(
+      '[RESULT] counter=${msg['counter']} | ${msg['echo_message']} | ts=${msg['ts']}',
+    );
   }
 
   // Verify monotonicity
@@ -107,6 +115,8 @@ Future<void> main() async {
     }
   }
   log('');
-  log('[DONE] ${ordered.length} messages received, '
-      'monotonically increasing: $isMonotonic');
+  log(
+    '[DONE] ${ordered.length} messages received, '
+    'monotonically increasing: $isMonotonic',
+  );
 }
